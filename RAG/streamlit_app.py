@@ -1,7 +1,9 @@
-import streamlit as st
+"""Conversational RAG Chat Interface using Streamlit"""
+
 import os
+import streamlit as st
 from dotenv import load_dotenv
-from conversational_rag import (
+from RAG.conversational_rag import (
     create_pinecone_index,
     add_documents_to_pinecone_index,
     conversational_rag_chain,
@@ -10,7 +12,6 @@ from conversational_rag import (
     PineconeVectorStore,
     GoogleGenerativeAIEmbeddings
 )
-import bs4
 
 # Load environment variables
 load_dotenv(".env")
@@ -23,12 +24,12 @@ embedding_model = GoogleGenerativeAIEmbeddings(model='models/embedding-001')
 if 'messages' not in st.session_state:
     st.session_state.messages = []
 
-def process_url(url):
+def process_url(web_page_url):
     """Process a URL and add it to the vector store"""
     try:
         # Load documents from URL
         loader = WebBaseLoader(
-            web_paths=(url,),
+            web_paths=(web_page_url,),
             # bs_kwargs=dict(
             #     parse_only=bs4.SoupStrainer(
             #         class_=("__next")
@@ -49,7 +50,7 @@ def process_url(url):
         add_documents_to_pinecone_index(vector_store, split_documents)
         
         return True
-    except Exception as e:
+    except (ValueError, RuntimeError, KeyError) as e:
         st.error(f"Error processing URL: {str(e)}")
         return False
 
